@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 Week Training Tracker</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0efe9;
+    --text:#1a1a1a;--text2:#6b6b6b;--text3:#9b9b9b;
+    --border:#e0ddd5;--border2:#c8c5bc;
+    --green:#1D9E75;--green-light:#E1F5EE;--green-text:#0F6E56;
+    --blue-light:#E6F1FB;--blue-text:#0C447C;
+    --purple-light:#EEEDFE;--purple-text:#3C3489;
+    --coral-light:#FAECE7;--coral-text:#993C1D;
+    --amber-light:#FAEEDA;--amber-text:#854F0B;
+    --pink-light:#FBEAF0;--pink-text:#72243E;
+    --gray-light:#F1EFE8;--gray-text:#5F5E5A;
+    --radius:8px;--radius-lg:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;
+      --text:#f0f0f0;--text2:#a0a0a0;--text3:#6a6a6a;
+      --border:#333;--border2:#444;
+      --green-light:#0a3d2e;--green-text:#5DCAA5;
+      --blue-light:#0a1f38;--blue-text:#85B7EB;
+      --purple-light:#1a1840;--purple-text:#AFA9EC;
+      --coral-light:#3a1a0f;--coral-text:#F0997B;
+      --amber-light:#3a2a0a;--amber-text:#EF9F27;
+      --pink-light:#3a1228;--pink-text:#ED93B1;
+      --gray-light:#2a2a28;--gray-text:#B4B2A9;
+    }
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:var(--text);background:var(--bg3);min-height:100vh}
+  .app{max-width:680px;margin:0 auto;padding:16px}
+  h1{font-size:18px;font-weight:600;margin-bottom:4px}
+  .subtitle{font-size:13px;color:var(--text2);margin-bottom:16px}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .tab{font-size:13px;padding:7px 16px;border:none;background:transparent;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit}
+  .tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+  .section{display:none}.section.visible{display:block}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .stat{background:var(--bg2);border-radius:var(--radius);padding:10px 12px}
+  .stat-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+  .stat-val{font-size:22px;font-weight:600;color:var(--text)}
+  .stat-sub{font-size:11px;color:var(--text3)}
+  .prog-wrap{height:5px;background:var(--border);border-radius:3px;margin-bottom:16px}
+  .prog-bar{height:5px;border-radius:3px;background:var(--green);transition:width .4s}
+  .phase-hdr{display:flex;align-items:center;gap:8px;margin:20px 0 8px}
+  .pbadge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+  .ph1{background:var(--green-light);color:var(--green-text)}
+  .ph2{background:var(--blue-light);color:var(--blue-text)}
+  .ph3{background:var(--amber-light);color:var(--amber-text)}
+  .psub{font-size:11px;color:var(--text3);margin-left:auto}
+  .week-label{font-size:11px;font-weight:500;color:var(--text2);padding:5px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px}
+  .day-card{border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:6px;overflow:hidden;background:var(--bg)}
+  .day-card.complete{border-color:var(--green)}
+  .day-card.today{border-color:#378ADD;border-width:1.5px}
+  .day-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer}
+  .day-header:hover{background:var(--bg2)}
+  .day-meta{display:flex;flex-direction:column;min-width:56px}
+  .day-name{font-size:13px;font-weight:500}
+  .day-date{font-size:11px;color:var(--text3)}
+  .day-tags{display:flex;flex-wrap:wrap;gap:3px;flex:1}
+  .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:500}
+  .t-mob{background:var(--purple-light);color:var(--purple-text)}
+  .t-str{background:var(--blue-light);color:var(--blue-text)}
+  .t-run{background:var(--green-light);color:var(--green-text)}
+  .t-rec{background:var(--gray-light);color:var(--gray-text)}
+  .t-inj{background:var(--coral-light);color:var(--coral-text)}
+  .t-sport{background:var(--amber-light);color:var(--amber-text)}
+  .t-core{background:var(--pink-light);color:var(--pink-text)}
+  .day-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .chk-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);flex-shrink:0;transition:all .15s}
+  .chk-btn.done{background:var(--green);border-color:var(--green);color:#fff}
+  .chevron{font-size:13px;color:var(--text3);transition:transform .2s;line-height:1}
+  .chevron.open{transform:rotate(180deg)}
+  .day-body{padding:12px;border-top:1px solid var(--border);display:none}
+  .day-body.open{display:block}
+  .session-block{margin-bottom:12px}
+  .session-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  .h75-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
+  .h75-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text);cursor:pointer;padding:7px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);transition:all .15s;user-select:none}
+  .h75-item:hover{background:var(--bg2)}
+  .h75-item.done{border-color:var(--green);background:var(--green-light);color:var(--green-text)}
+  .h75-cb{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;transition:all .15s}
+  .h75-cb.done{background:var(--green);border-color:var(--green);color:#fff}
+  .h75-icon{font-size:15px;flex-shrink:0}
+  textarea{width:100%;min-height:64px;resize:vertical;font-size:13px;padding:8px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;line-height:1.5}
+  textarea:focus{outline:none;border-color:var(--border2)}
+  textarea::placeholder{color:var(--text3)}
+  .btn{font-size:12px;padding:5px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s;margin-top:6px}
+  .btn:hover{background:var(--bg2)}
+  .btn.saved{color:var(--green-text);border-color:var(--green)}
+  .btn-export{font-size:12px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);font-family:inherit;margin-bottom:16px}
+  .btn-export:hover{background:var(--bg2)}
+  .heatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:8px}
+  .hm-col{display:flex;flex-direction:column;gap:3px}
+  .hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px}
+  .hm-cell{aspect-ratio:1;border-radius:3px;background:var(--border);cursor:default}
+  .hm-cell.partial{background:#9FE1CB}
+  .hm-cell.complete{background:var(--green)}
+  .hm-cell.today-cell{outline:2px solid #378ADD;outline-offset:1px}
+  .hm-legend{display:flex;gap:12px;font-size:11px;color:var(--text2);margin-bottom:20px;flex-wrap:wrap}
+  .hm-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  .notes-log-item{padding:10px 0;border-bottom:1px solid var(--border)}
+  .notes-log-item:last-child{border-bottom:none}
+  .notes-log-date{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px}
+  .notes-log-text{font-size:13px;color:var(--text);line-height:1.5}
+  .empty-state{font-size:13px;color:var(--text3);padding:20px 0}
+  @media(max-width:480px){
+    .stats-row{grid-template-columns:repeat(2,1fr)}
+    .h75-grid{grid-template-columns:1fr}
+    .app{padding:12px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>12 Week Training Tracker</h1>
+  <p class="subtitle">15 Jun – 6 Sep 2026 &nbsp;·&nbsp; Football pre-season</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('tracker',event)">Daily tracker</button>
+    <button class="tab" onclick="showTab('overview',event)">Overview</button>
+  </div>
+
+  <div class="section visible" id="tracker">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Days complete</div><div class="stat-val" id="st-days">0</div><div class="stat-sub">of 84</div></div>
+      <div class="stat"><div class="stat-label">75 Hard streak</div><div class="stat-val" id="st-streak">0</div><div class="stat-sub">days</div></div>
+      <div class="stat"><div class="stat-label">Current week</div><div class="stat-val" id="st-week">1</div><div class="stat-sub">of 12</div></div>
+      <div class="stat"><div class="stat-label">Overall progress</div><div class="stat-val" id="st-pct">0%</div><div class="stat-sub">&nbsp;</div></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="main-bar" style="width:0%"></div></div>
+    <div id="cal-body"></div>
+  </div>
+
+  <div class="section" id="overview">
+    <button class="btn-export" onclick="exportData()">&#8659; Export progress data</button>
+    <div id="overview-body"></div>
+  </div>
+</div>
+
+<script>
+const START = new Date(2026,5,15);
+const TODAY = new Date(2026,5,11);
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
+function fmtDate(d){return d.getDate()+' '+MONTHS[d.getMonth()]}
+function dayKey(d){return 'd'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate()}
+
+const H75=[
+  {id:'w1',icon:'🏃',label:'Workout 1'},
+  {id:'w2',icon:'🏋️',label:'Workout 2'},
+  {id:'water',icon:'💧',label:'4.5L water'},
+  {id:'diet',icon:'🥗',label:'Diet on track'},
+  {id:'read',icon:'📖',label:'10 pages read'},
+  {id:'photo',icon:'📷',label:'Progress photo'},
+  {id:'alcohol',icon:'🚫',label:'No alcohol'},
+];
+
+const PHASES=[
+  {label:'Phase 1 — Foundation',cls:'ph1',range:'15 Jun – 12 Jul',wks:[1,2,3,4]},
+  {label:'Phase 2 — Build',cls:'ph2',range:'13 Jul – 9 Aug',wks:[5,6,7,8]},
+  {label:'Phase 3 — Peak & sharpen',cls:'ph3',range:'10 Aug – 6 Sep',wks:[9,10,11,12]}
+];
+const DELOAD=[4,8];
+
+function getSessions(wn,jsDay){
+  const dl=DELOAD.includes(wn);
+  const s=dl?' (–30%)':'';
+  const runL=['Easy run 30–35min','Easy run 35–40min','Long run 45min','Easy run 30min','Long run 50min','Long run 55min','Long run 55–60min','Easy run 30min','Long run 55min + strides','Long run 60min','Long run 60min','Easy run — legs fresh'];
+  const intL=['Intervals','Intervals','Intervals','Easy intervals / walk','Intervals — tempo','Intervals — longer reps','Intervals — sprint work','Easy jog / walk','Intervals — football speed','Intervals — max velocity','Intervals + 5km TT','Final 5km TT'];
+  const thuPM=(wn<=2||dl)?'Core & trunk':'Full body athletic'+(wn>=9?' — reactive':'');
+  const lowerPM=wn>=9?('Lower power — explosive'+s):(wn===7?'Lower strength + 5km TT':('Lower strength'+s));
+  const map={
+    1:{am:['Mobility'],pm:['Chest & shoulders'+s]},
+    2:{am:['Mobility'],pm:[lowerPM]},
+    3:{am:[intL[wn-1]],pm:['Back & biceps'+s]},
+    4:{am:['Mobility'],pm:[thuPM]},
+    5:{am:[runL[wn-1]],pm:['Injury prevention']},
+    6:{am:['Upper strength or sport'],pm:[]},
+    0:{am:['Active recovery'],pm:[]}
+  };
+  return map[jsDay]||{am:[],pm:[]};
+}
+
+const TM={'Mobility':'t-mob','Chest':'t-str','Lower':'t-str','Back':'t-str','Upper strength':'t-str','Full body':'t-str','Core':'t-core','Interval':'t-run','run':'t-run','jog':'t-run','Injury':'t-inj','Active recovery':'t-rec','sport':'t-sport','TT':'t-run','tempo':'t-run','sprint':'t-run','football speed':'t-run','power':'t-str','Easy jog':'t-run'};
+function getTag(s){const sl=s.toLowerCase();for(const k in TM){if(sl.includes(k.toLowerCase()))return TM[k]}return 't-rec'}
+function tagHtml(s){return`<span class="tag ${getTag(s)}">${s}</span>`}
+
+let state={};
+const STORE_KEY='training_tracker_v1';
+
+function loadState(){try{const d=localStorage.getItem(STORE_KEY);if(d)state=JSON.parse(d)}catch(e){state={}}}
+function saveState(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state))}catch(e){}}
+function getDay(key){if(!state[key])state[key]={done:false,h75:{},notes:'',open:false};return state[key]}
+
+function toggleDone(key,e){e.stopPropagation();const d=getDay(key);d.done=!d.done;saveState();updateCard(key);updateStats()}
+function toggleH75(key,id){const d=getDay(key);d.h75[id]=!d.h75[id];saveState();updateCard(key);updateStats()}
+function toggleOpen(key){const d=getDay(key);d.open=!d.open;saveState();const b=document.getElementById('body_'+key);const ch=document.getElementById('chev_'+key);if(b)b.className='day-body'+(d.open?' open':'');if(ch)ch.className='chevron'+(d.open?' open':'')}
+function saveNote(key){const el=document.getElementById('note_'+key);if(el){getDay(key).notes=el.value;saveState()}const btn=document.getElementById('nbtn_'+key);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save note';btn.classList.remove('saved')},1500)}}
+
+function updateCard(key){
+  const d=getDay(key);
+  const card=document.getElementById('card_'+key);
+  const chk=document.getElementById('chk_'+key);
+  if(card){
+    let cls='day-card';
+    if(d.done)cls+=' complete';
+    const date=keyToDate(key);
+    if(date&&date.toDateString()===TODAY.toDateString())cls+=' today';
+    card.className=cls;
+  }
+  if(chk){chk.className='chk-btn'+(d.done?' done':'');chk.innerHTML=d.done?'✓':''}
+  H75.forEach(h=>{
+    const item=document.getElementById('hi_'+key+'_'+h.id);
+    const cb=document.getElementById('hcb_'+key+'_'+h.id);
+    if(item)item.className='h75-item'+(d.h75[h.id]?' done':'');
+    if(cb)cb.className='h75-cb'+(d.h75[h.id]?' done':'');
+    if(cb)cb.innerHTML=d.h75[h.id]?'✓':'';
+  });
+}
+
+function keyToDate(key){
+  const m=key.match(/d(\d{4})_(\d+)_(\d+)/);
+  if(!m)return null;
+  return new Date(+m[1],+m[2]-1,+m[3]);
+}
+
+function updateStats(){
+  let total=0,streak=0;
+  const diffWk=Math.floor((TODAY-START)/(86400000*7));
+  const curWk=Math.min(Math.max(diffWk+1,1),12);
+  for(let i=0;i<84;i++){const k=dayKey(addDays(START,i));if(getDay(k).done)total++;}
+  for(let i=83;i>=0;i--){const k=dayKey(addDays(START,i));if(getDay(k).done)streak++;else break;}
+  const pct=Math.round((total/84)*100);
+  document.getElementById('st-days').textContent=total;
+  document.getElementById('st-streak').textContent=streak;
+  document.getElementById('st-week').textContent=curWk;
+  document.getElementById('st-pct').textContent=pct+'%';
+  const bar=document.getElementById('main-bar');
+  if(bar)bar.style.width=pct+'%';
+}
+
+function renderCalendar(){
+  let html='';let wi=0;
+  PHASES.forEach(ph=>{
+    html+=`<div class="phase-hdr"><span class="pbadge ${ph.cls}">${ph.label}</span><span class="psub">${ph.range}</span></div>`;
+    ph.wks.forEach(wn=>{
+      const wkStart=addDays(START,wi*7);
+      html+=`<div class="week-label">Week ${wn}${DELOAD.includes(wn)?' — Deload':''}  ·  ${fmtDate(wkStart)} – ${fmtDate(addDays(wkStart,6))}</div>`;
+      for(let di=0;di<7;di++){
+        const date=addDays(wkStart,di);
+        const jsDay=date.getDay();
+        const key=dayKey(date);
+        const d=getDay(key);
+        const sess=getSessions(wn,jsDay);
+        const allTags=[...sess.am,...sess.pm].filter(x=>x&&x!=='—');
+        const isToday=date.toDateString()===TODAY.toDateString();
+        let cardCls='day-card';
+        if(d.done)cardCls+=' complete';
+        if(isToday)cardCls+=' today';
+        html+=`<div class="${cardCls}" id="card_${key}">
+          <div class="day-header" onclick="toggleOpen('${key}')">
+            <div class="day-meta">
+              <span class="day-name">${DAY_NAMES[jsDay]}</span>
+              <span class="day-date">${fmtDate(date)}</span>
+            </div>
+            <div class="day-tags">${allTags.length?allTags.map(tagHtml).join(''):'<span style="font-size:11px;color:var(--text3)">Rest day</span>'}</div>
+            <div class="day-actions">
+              <button class="chk-btn${d.done?' done':''}" id="chk_${key}" onclick="toggleDone('${key}',event)" title="Mark day complete">${d.done?'✓':''}</button>
+              <span class="chevron${d.open?' open':''}" id="chev_${key}">&#8964;</span>
+            </div>
+          </div>
+          <div class="day-body${d.open?' open':''}" id="body_${key}">
+            ${sess.am.length?`<div class="session-block"><div class="session-title">Morning</div><div>${sess.am.map(tagHtml).join('')}</div></div>`:''}
+            ${sess.pm.length?`<div class="session-block"><div class="session-title">Afternoon / evening</div><div>${sess.pm.map(tagHtml).join('')}</div></div>`:''}
+            <div class="session-block">
+              <div class="session-title">75 Hard checklist</div>
+              <div class="h75-grid">
+                ${H75.map(h=>`<div class="h75-item${d.h75[h.id]?' done':''}" id="hi_${key}_${h.id}" onclick="toggleH75('${key}','${h.id}')">
+                  <div class="h75-cb${d.h75[h.id]?' done':''}" id="hcb_${key}_${h.id}">${d.h75[h.id]?'✓':''}</div>
+                  <span class="h75-icon">${h.icon}</span>
+                  <span>${h.label}</span>
+                </div>`).join('')}
+              </div>
+            </div>
+            <div class="session-block">
+              <div class="session-title">Session notes</div>
+              <textarea id="note_${key}" placeholder="Log weights, times, how you felt...">${d.notes||''}</textarea>
+              <button class="btn" id="nbtn_${key}" onclick="saveNote('${key}')">Save note</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      wi++;
+    });
+  });
+  document.getElementById('cal-body').innerHTML=html;
+}
+
+function renderOverview(){
+  let html='';
+  html+='<div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--text2)">84-day progress</div>';
+  html+='<div class="hm-week" style="grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:6px">';
+  for(let i=0;i<12;i++){
+    html+=`<div style="font-size:10px;color:var(--text3);text-align:center">W${i+1}</div>`;
+  }
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:8px">';
+  for(let w=0;w<12;w++){
+    html+='<div style="display:flex;flex-direction:column;gap:3px">';
+    for(let d=0;d<7;d++){
+      const date=addDays(START,w*7+d);
+      const key=dayKey(date);
+      const ds=getDay(key);
+      const h75count=H75.filter(h=>ds.h75[h.id]).length;
+      const isToday=date.toDateString()===TODAY.toDateString();
+      let cls='hm-cell';
+      if(ds.done)cls+=' complete';
+      else if(h75count>0)cls+=' partial';
+      if(isToday)cls+=' today-cell';
+      html+=`<div class="${cls}" title="${DAY_NAMES[date.getDay()]} ${fmtDate(date)}${ds.done?' ✓':''}"></div>`;
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  html+=`<div class="hm-legend">
+    <span><span class="hm-dot" style="background:var(--green)"></span>Complete</span>
+    <span><span class="hm-dot" style="background:#9FE1CB"></span>Partial</span>
+    <span><span class="hm-dot" style="background:var(--border)"></span>Not started</span>
+    <span><span class="hm-dot" style="background:transparent;outline:2px solid #378ADD;outline-offset:1px"></span>Today</span>
+  </div>`;
+
+  const notes=[];
+  for(let i=0;i<84;i++){
+    const date=addDays(START,i);
+    const key=dayKey(date);
+    const ds=getDay(key);
+    if(ds.notes&&ds.notes.trim()){notes.push({date,notes:ds.notes.trim()})}
+  }
+  if(notes.length){
+    html+='<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Session notes log</div>';
+    notes.forEach(n=>{
+      html+=`<div class="notes-log-item">
+        <div class="notes-log-date">${DAY_NAMES[n.date.getDay()]} ${fmtDate(n.date)}</div>
+        <div class="notes-log-text">${n.notes}</div>
+      </div>`;
+    });
+  }else{
+    html+='<div class="empty-state">Notes you save will appear here as a training log.</div>';
+  }
+  document.getElementById('overview-body').innerHTML=html;
+}
+
+function exportData(){
+  const data={exported:new Date().toISOString(),progress:{}};
+  for(let i=0;i<84;i++){
+    const date=addDays(START,i);
+    const key=dayKey(date);
+    const ds=getDay(key);
+    if(ds.done||Object.values(ds.h75).some(Boolean)||ds.notes){
+      data.progress[fmtDate(date)+'_'+DAY_NAMES[date.getDay()]]={done:ds.done,h75:ds.h75,notes:ds.notes};
+    }
+  }
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='training_progress_backup.json';a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showTab(id,e){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  e.target.classList.add('active');
+  if(id==='overview')renderOverview();
+}
+
+loadState();
+renderCalendar();
+updateStats();
+</script>
+</body>
+</html>
